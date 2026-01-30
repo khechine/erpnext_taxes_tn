@@ -1,0 +1,60 @@
+Tu es un expert ERPNext / Frappe Framework.
+
+Objectif :
+Créer une application ERPNext personnalisée et maintenable pour implémenter
+les règles de TVA tunisiennes dans ERPNext v15/v16, sans modifier le core.
+
+Contexte technique :
+- ERPNext v15/v16   
+- Frappe Framework
+- Approche : custom app + hooks + fixtures
+- Compatibilité multi-site
+- Compatible avec les mises à jour ERPNext
+
+Fonctionnalités attendues :
+
+1. Créer une app nommée : erpnext_taxes_tn
+
+2. Définir les taux de TVA tunisiens via fixtures :
+   - TVA 19% (standard)
+   - TVA 13% (réduit)
+   - TVA 7% (super réduit)
+   - TVA 0% (export / exonéré)
+
+3. Créer les documents suivants :
+   - Tax Category (Tunisie)
+   - Tax Rules pour chaque taux
+   - Taxes and Charges Templates pour :
+     - Ventes locales
+     - Achats locaux
+     - Export (TVA 0%)
+
+4. Ajouter un hook automatique :
+   - Doctype concerné : Sales Invoice, Purchase Invoice
+   - Event : before_save
+   - Règle :
+     - Si pays = Tunisie → appliquer TVA locale
+     - Si client = export → TVA 0%
+     - Si produit/service exonéré → pas de TVA
+
+5. Implémenter la logique Python dans un fichier :
+   erpnext_taxes_tn/taxes.py
+
+6. Le code doit :
+   - Être clair, commenté
+   - Respecter les conventions Frappe
+   - Être prêt pour un environnement SaaS multi-tenant
+
+7. Fournir :
+   - Arborescence complète de l’app
+   - Exemples de fichiers hooks.py
+   - Exemples de fixtures JSON
+   - Exemple de fonction Python apply_tunisia_tva()
+
+Contraintes :
+- Aucune modification du core ERPNext
+- Code compatible ERPNext v15/v16   
+- Approche clean & scalable
+
+Livrable attendu :
+Un guide technique + snippets de code directement exploitables.

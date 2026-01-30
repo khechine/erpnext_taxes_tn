@@ -1,0 +1,21 @@
+[project]
+name = "erpnext_taxes_tn"
+version = "1.0.0"
+description = "ERPNext custom app for Tunisian VAT/TVA implementation"
+authors = [
+    { name = "Your Name", email = "your.email@example.com" }
+]
+dependencies = [
+    "frappe",
+    "erpnext"
+]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.bench]
+frappe_version = "15"

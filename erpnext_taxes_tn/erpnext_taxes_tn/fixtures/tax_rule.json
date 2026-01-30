@@ -1,0 +1,44 @@
+[
+    {
+        "doctype": "Tax Rule",
+        "name": "Tunisia - Sales Local 19%",
+        "tax_category": "Tunisia",
+        "tax_type": "Sales",
+        "use_for_shopping_cart": 0,
+        "customer_group": "",
+        "supplier_group": "",
+        "billing_country": "Tunisia",
+        "shipping_country": "",
+        "priority": 1,
+        "sales_tax_template": "Tunisia - Sales TVA 19%",
+        "purchase_tax_template": ""
+    },
+    {
+        "doctype": "Tax Rule",
+        "name": "Tunisia - Sales Export 0%",
+        "tax_category": "Tunisia",
+        "tax_type": "Sales",
+        "use_for_shopping_cart": 0,
+        "customer_group": "",
+        "supplier_group": "",
+        "billing_country": "",
+        "shipping_country": "",
+        "priority": 2,
+        "sales_tax_template": "Tunisia - Export TVA 0%",
+        "purchase_tax_template": ""
+    },
+    {
+        "doctype": "Tax Rule",
+        "name": "Tunisia - Purchase Local 19%",
+        "tax_category": "Tunisia",
+        "tax_type": "Purchase",
+        "use_for_shopping_cart": 0,
+        "customer_group": "",
+        "supplier_group": "",
+        "billing_country": "Tunisia",
+        "shipping_country": "",
+        "priority": 1,
+        "sales_tax_template": "",
+        "purchase_tax_template": "Tunisia - Purchase TVA 19%"
+    }
+]
