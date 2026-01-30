@@ -76,43 +76,55 @@ def apply_tunisia_tva(doc, method=None):
 def get_tax_template(party_country, is_sales, company):
 	"""
 	Determine the appropriate tax template based on party country and transaction type.
-	
+
 	Args:
 		party_country: Country of the customer or supplier
 		is_sales: True for sales, False for purchases
 		company: The company name
-		
+
 	Returns:
 		str: Name of the tax template to apply, or None
 	"""
-	
+
 	# Check if party is in Tunisia
 	is_local = party_country == "Tunisia"
-	
-	# Determine template prefix
-	template_type = "Sales" if is_sales else "Purchase"
-	
+
+	# Determine doctype
+	doctype = "Sales Taxes and Charges Template" if is_sales else "Purchase Taxes and Charges Template"
+
 	if is_local:
 		# Local transaction - apply standard 19% VAT
-		template_name = f"Tunisia - {template_type} TVA 19%"
+		# Try multiple naming patterns (English and French)
+		template_patterns = [
+			f"Tunisia - {'Sales' if is_sales else 'Purchase'} TVA 19%",
+			"TVA Vente 19%" if is_sales else "TVA Achat 19%",
+			"Tunisia TVA 19%",
+		]
 	else:
 		# Export/Import transaction
 		if is_sales:
 			# Export - 0% VAT
-			template_name = "Tunisia - Export TVA 0%"
+			template_patterns = [
+				"Tunisia - Export TVA 0%",
+				"TVA Vente 0%",
+				"Export TVA 0%",
+			]
 		else:
 			# Import - typically no automatic tax, let user decide
-			# Could be handled differently based on customs rules
 			return None
-	
-	# Verify the template exists
-	if frappe.db.exists(f"{template_type} Taxes and Charges Template", template_name):
-		return template_name
-	else:
-		frappe.logger().warning(
-			f"Tax template '{template_name}' not found. Please ensure fixtures are installed."
-		)
-		return None
+
+	# Try each pattern
+	for template_name in template_patterns:
+		# Check with company filter
+		exists = frappe.db.exists(doctype, {"title": template_name, "company": company})
+		if exists:
+			return exists
+		# Check without company filter (global templates)
+		exists = frappe.db.exists(doctype, template_name)
+		if exists:
+			return template_name
+
+	return None
 
 
 def validate_tax_amounts(doc, method=None):
