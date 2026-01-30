@@ -66,6 +66,14 @@ def setup_company_taxes(company, abbr):
 	"""
 	print(f"Setting up taxes for company: {company}")
 
+	# Check if templates already exist for this company
+	existing_sales = frappe.db.count("Sales Taxes and Charges Template", {"company": company})
+	existing_purchase = frappe.db.count("Purchase Taxes and Charges Template", {"company": company})
+
+	if existing_sales > 0 and existing_purchase > 0:
+		print(f"  Templates already exist for {company}, skipping creation")
+		return
+
 	# Define Tunisian tax rates
 	tax_rates = [
 		{"rate": 19, "name": "TVA 19% - TN", "description": "Standard rate"},
@@ -78,7 +86,13 @@ def setup_company_taxes(company, abbr):
 	parent_account = get_duties_and_taxes_account(company, abbr)
 
 	if not parent_account:
-		print("[WARNING]",f"Could not find Duties and Taxes account for {company}")
+		print(f"[WARNING] Could not find tax parent account for {company}, skipping account creation")
+		# Still try to create templates if we can find existing tax accounts
+		existing_accounts = find_existing_tax_accounts(company, abbr)
+		if existing_accounts:
+			print(f"  Found existing tax accounts, creating templates...")
+			create_sales_templates_with_accounts(company, abbr, existing_accounts)
+			create_purchase_templates_with_accounts(company, abbr, existing_accounts)
 		return
 
 	# Create tax accounts
@@ -95,21 +109,147 @@ def setup_company_taxes(company, abbr):
 	create_purchase_templates(company, abbr)
 
 
+def find_existing_tax_accounts(company, abbr):
+	"""Find existing tax accounts for the company."""
+	accounts = {}
+
+	# Common patterns for tax account names
+	patterns = [
+		# French patterns
+		{"rate": 19, "patterns": ["TVA Collectée 19%", "TVA 19%", "TVA Vente 19%"]},
+		{"rate": 13, "patterns": ["TVA Collectée 13%", "TVA 13%", "TVA Vente 13%"]},
+		{"rate": 7, "patterns": ["TVA Collectée 7%", "TVA 7%", "TVA Vente 7%"]},
+		{"rate": 0, "patterns": ["TVA Collectée 0%", "TVA 0%", "TVA Vente 0%"]},
+	]
+
+	for item in patterns:
+		rate = item["rate"]
+		for pattern in item["patterns"]:
+			# Try with company abbreviation
+			account = frappe.db.get_value(
+				"Account",
+				{"account_name": pattern, "company": company},
+				"name"
+			)
+			if account:
+				accounts[f"sales_{rate}"] = account
+				break
+
+	# Find purchase accounts (deductible)
+	purchase_patterns = [
+		{"rate": 19, "patterns": ["TVA Déductible 19%", "TVA Récupérable 19%"]},
+		{"rate": 13, "patterns": ["TVA Déductible 13%", "TVA Récupérable 13%"]},
+		{"rate": 7, "patterns": ["TVA Déductible 7%", "TVA Récupérable 7%"]},
+	]
+
+	for item in purchase_patterns:
+		rate = item["rate"]
+		for pattern in item["patterns"]:
+			account = frappe.db.get_value(
+				"Account",
+				{"account_name": pattern, "company": company},
+				"name"
+			)
+			if account:
+				accounts[f"purchase_{rate}"] = account
+				break
+
+	return accounts if accounts else None
+
+
+def create_sales_templates_with_accounts(company, abbr, accounts):
+	"""Create sales templates using existing accounts."""
+	templates = [
+		{"title": "Tunisia - Sales TVA 19%", "rate": 19.0, "account_key": "sales_19"},
+		{"title": "Tunisia - Sales TVA 13%", "rate": 13.0, "account_key": "sales_13"},
+		{"title": "Tunisia - Sales TVA 7%", "rate": 7.0, "account_key": "sales_7"},
+		{"title": "Tunisia - Export TVA 0%", "rate": 0.0, "account_key": "sales_0"},
+	]
+
+	for tmpl in templates:
+		account = accounts.get(tmpl["account_key"])
+		if account:
+			create_tax_template(
+				doctype="Sales Taxes and Charges Template",
+				title=tmpl["title"],
+				company=company,
+				rate=tmpl["rate"],
+				account=account,
+				description=f"TVA {int(tmpl['rate'])}%"
+			)
+
+
+def create_purchase_templates_with_accounts(company, abbr, accounts):
+	"""Create purchase templates using existing accounts."""
+	templates = [
+		{"title": "Tunisia - Purchase TVA 19%", "rate": 19.0, "account_key": "purchase_19"},
+		{"title": "Tunisia - Purchase TVA 13%", "rate": 13.0, "account_key": "purchase_13"},
+		{"title": "Tunisia - Purchase TVA 7%", "rate": 7.0, "account_key": "purchase_7"},
+	]
+
+	for tmpl in templates:
+		account = accounts.get(tmpl["account_key"])
+		if account:
+			create_tax_template(
+				doctype="Purchase Taxes and Charges Template",
+				title=tmpl["title"],
+				company=company,
+				rate=tmpl["rate"],
+				account=account,
+				description=f"TVA {int(tmpl['rate'])}%"
+			)
+
+
 def get_duties_and_taxes_account(company, abbr):
 	"""Get the Duties and Taxes parent account for the company."""
-	account_name = f"Duties and Taxes - {abbr}"
+	# Try multiple naming conventions (English and French)
+	possible_names = [
+		f"Duties and Taxes - {abbr}",
+		f"Droits de Douane et Taxes - {abbr}",
+		f"Taxes - {abbr}",
+	]
 
-	if frappe.db.exists("Account", account_name):
-		return account_name
+	for name in possible_names:
+		if frappe.db.exists("Account", name):
+			return name
 
-	# Try to find it by account_name
+	# Try to find by account_name field
+	possible_account_names = [
+		"Duties and Taxes",
+		"Droits de Douane et Taxes",
+		"Taxes",
+	]
+
+	for account_name in possible_account_names:
+		account = frappe.db.get_value(
+			"Account",
+			{"account_name": account_name, "company": company},
+			"name"
+		)
+		if account:
+			return account
+
+	# Last resort: find any Tax type parent account
 	account = frappe.db.get_value(
 		"Account",
-		{"account_name": "Duties and Taxes", "company": company},
+		{
+			"company": company,
+			"account_type": "Tax",
+			"is_group": 1
+		},
 		"name"
 	)
+	if account:
+		return account
 
-	return account
+	# Find parent of existing tax accounts
+	existing_tax = frappe.db.get_value(
+		"Account",
+		{"company": company, "account_type": "Tax", "is_group": 0},
+		"parent_account"
+	)
+
+	return existing_tax
 
 
 def create_tax_account(account_name, parent_account, company, abbr):
