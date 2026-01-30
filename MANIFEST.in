@@ -1,6 +1,7 @@
-include erpnext_taxes_tn/README.md
-include erpnext_taxes_tn/TECHNICAL_GUIDE.md
-include erpnext_taxes_tn/license.txt
+include README.md
+include TECHNICAL_GUIDE.md
+include license.txt
+include pyproject.toml
 recursive-include erpnext_taxes_tn *.py
 recursive-include erpnext_taxes_tn *.json
 recursive-include erpnext_taxes_tn *.md
