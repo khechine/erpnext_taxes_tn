@@ -5,10 +5,7 @@ description = "ERPNext custom app for Tunisian VAT/TVA implementation"
 authors = [
     { name = "Your Name", email = "your.email@example.com" }
 ]
-dependencies = [
-    "frappe",
-    "erpnext"
-]
+dependencies = []
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
