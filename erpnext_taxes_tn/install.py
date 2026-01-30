@@ -21,7 +21,7 @@ def setup_tunisia_taxes():
 	"""
 	Main setup function to create all Tunisian tax configuration.
 	"""
-	frappe.logger().info("Setting up Tunisian TVA configuration...")
+	print("Setting up Tunisian TVA configuration...")
 
 	# Create Tax Category
 	create_tax_category()
@@ -34,14 +34,14 @@ def setup_tunisia_taxes():
 	)
 
 	if not companies:
-		frappe.logger().warning("No Tunisian companies found. Skipping tax setup.")
+		print("[WARNING]","No Tunisian companies found. Skipping tax setup.")
 		return
 
 	for company in companies:
 		setup_company_taxes(company.name, company.abbr)
 
 	frappe.db.commit()
-	frappe.logger().info("Tunisian TVA configuration completed!")
+	print("Tunisian TVA configuration completed!")
 
 
 def create_tax_category():
@@ -53,7 +53,7 @@ def create_tax_category():
 			"title": "Tunisia"
 		})
 		doc.insert(ignore_permissions=True)
-		frappe.logger().info("Created Tax Category: Tunisia")
+		print("Created Tax Category: Tunisia")
 
 
 def setup_company_taxes(company, abbr):
@@ -64,7 +64,7 @@ def setup_company_taxes(company, abbr):
 		company: Company name
 		abbr: Company abbreviation
 	"""
-	frappe.logger().info(f"Setting up taxes for company: {company}")
+	print(f"Setting up taxes for company: {company}")
 
 	# Define Tunisian tax rates
 	tax_rates = [
@@ -78,7 +78,7 @@ def setup_company_taxes(company, abbr):
 	parent_account = get_duties_and_taxes_account(company, abbr)
 
 	if not parent_account:
-		frappe.logger().warning(f"Could not find Duties and Taxes account for {company}")
+		print("[WARNING]",f"Could not find Duties and Taxes account for {company}")
 		return
 
 	# Create tax accounts
@@ -136,7 +136,7 @@ def create_tax_account(account_name, parent_account, company, abbr):
 		"is_group": 0
 	})
 	doc.insert(ignore_permissions=True)
-	frappe.logger().info(f"Created account: {full_name}")
+	print(f"Created account: {full_name}")
 
 	return full_name
 
@@ -234,7 +234,7 @@ def create_tax_template(doctype, title, company, rate, account, description):
 
 	# Verify account exists
 	if not frappe.db.exists("Account", account):
-		frappe.logger().warning(f"Account {account} not found, skipping template {title}")
+		print("[WARNING]",f"Account {account} not found, skipping template {title}")
 		return
 
 	doc = frappe.get_doc({
@@ -252,7 +252,7 @@ def create_tax_template(doctype, title, company, rate, account, description):
 		}]
 	})
 	doc.insert(ignore_permissions=True)
-	frappe.logger().info(f"Created template: {title} for {company}")
+	print(f"Created template: {title} for {company}")
 
 
 # Whitelisted function for manual setup
