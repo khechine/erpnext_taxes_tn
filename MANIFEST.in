@@ -1,0 +1,6 @@
+include erpnext_taxes_tn/README.md
+include erpnext_taxes_tn/TECHNICAL_GUIDE.md
+include erpnext_taxes_tn/license.txt
+recursive-include erpnext_taxes_tn *.py
+recursive-include erpnext_taxes_tn *.json
+recursive-include erpnext_taxes_tn *.md
