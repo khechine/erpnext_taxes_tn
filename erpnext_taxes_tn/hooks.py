@@ -72,7 +72,7 @@ app_version = "1.0.0"
 # ------------
 
 # before_install = "erpnext_taxes_tn.install.before_install"
-# after_install = "erpnext_taxes_tn.install.after_install"
+after_install = "erpnext_taxes_tn.install.after_install"
 
 # Uninstallation
 # ------------
@@ -236,39 +236,12 @@ doc_events = {
 # --------
 # Export fixtures to be installed with the app
 
+# Fixtures - Only company-independent data
+# Tax templates are created programmatically via after_install hook
+# because they require company-specific account names
 fixtures = [
 	{
 		"dt": "Tax Category",
 		"filters": [["name", "in", ["Tunisia"]]]
-	},
-	{
-		"dt": "Item Tax Template",
-		"filters": [["name", "in", [
-			"Tunisia TVA 19%",
-			"Tunisia TVA 13%",
-			"Tunisia TVA 7%",
-			"Tunisia TVA 0%"
-		]]]
-	},
-	{
-		"dt": "Sales Taxes and Charges Template",
-		"filters": [["name", "in", [
-			"Tunisia - Sales TVA 19%",
-			"Tunisia - Sales TVA 13%",
-			"Tunisia - Sales TVA 7%",
-			"Tunisia - Export TVA 0%"
-		]]]
-	},
-	{
-		"dt": "Purchase Taxes and Charges Template",
-		"filters": [["name", "in", [
-			"Tunisia - Purchase TVA 19%",
-			"Tunisia - Purchase TVA 13%",
-			"Tunisia - Purchase TVA 7%"
-		]]]
-	},
-	{
-		"dt": "Tax Rule",
-		"filters": [["tax_category", "=", "Tunisia"]]
 	}
 ]
